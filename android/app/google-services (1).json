@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "246323136837",
+    "project_id": "sharebox-flutter",
+    "storage_bucket": "sharebox-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246323136837:android:3ad34dafebd917ced0962c",
+        "android_client_info": {
+          "package_name": "com.sharebox.bd"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIJBy7yT3Bh6S8szntS_iC-hL4qZMObJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

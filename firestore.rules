@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── HELPER FUNCTIONS ─────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // ─── USERS ────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isOwner(userId);
+    }
+
+    // ─── TOOLS ────────────────────────────────────────────────────
+    match /tools/{toolId} {
+      // Any authenticated user can read tools
+      allow read: if isAuthenticated();
+
+      // Authenticated users can create and update tools they own
+      allow create, update: if isAuthenticated()
+        && (
+          request.resource.data.ownerId == request.auth.uid ||
+          request.resource.data.ownerId == 'admin_user_*'
+        );
+
+      // Users can only delete their own tools
+      allow delete: if isAuthenticated()
+        && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ─── RENTALS ──────────────────────────────────────────────────
+    match /rentals/{rentalId} {
+
+      // Only renter or owner can read a rental
+      allow read: if isAuthenticated()
+        && (
+          resource.data.renterId == request.auth.uid ||
+          resource.data.ownerId == request.auth.uid
+        );
+
+      // Any authenticated user can create a rental request
+      // Must set their own renterId
+      allow create: if isAuthenticated()
+        && request.resource.data.renterId == request.auth.uid;
+
+      // Only the renter or owner can update a rental
+      allow update: if isAuthenticated()
+        && (
+          resource.data.ownerId == request.auth.uid ||
+          resource.data.renterId == request.auth.uid
+        );
+
+      // Only owner or renter can delete
+      allow delete: if isAuthenticated()
+        && (
+          resource.data.ownerId == request.auth.uid ||
+          resource.data.renterId == request.auth.uid
+        );
+    }
+
+    // ─── FAVORITES ────────────────────────────────────────────────
+    match /users/{userId}/favorites/{toolId} {
+      allow read, create, delete: if isOwner(userId);
+    }
+
+    // ─── CHAT ROOMS ────────────────────────────────────────────────
+    match /chatRooms/{chatRoomId} {
+      // Participants can read chat room
+      allow read: if isAuthenticated()
+        && request.auth.uid in resource.data.participantIds;
+
+      // Only participants can create/update chat room
+      allow create, update: if isAuthenticated()
+        && request.auth.uid in request.resource.data.participantIds;
+
+      // Only participants can delete chat room
+      allow delete: if isAuthenticated()
+        && request.auth.uid in resource.data.participantIds;
+
+      // ─── MESSAGES (nested under chatRooms) ─────────────────────
+      match /messages/{messageId} {
+        // Only participants of the chat room can read messages
+        allow read: if isAuthenticated()
+          && request.auth.uid in get(/databases/$(database)/documents/chatRooms/$(chatRoomId)).data.participantIds;
+
+        // Only the sender can create a message
+        allow create: if isAuthenticated()
+          && request.resource.data.senderId == request.auth.uid
+          && request.auth.uid in get(/databases/$(database)/documents/chatRooms/$(chatRoomId)).data.participantIds;
+
+        // Only the sender can update their message
+        allow update: if isAuthenticated()
+          && resource.data.senderId == request.auth.uid;
+
+        // Only the sender can delete their message
+        allow delete: if isAuthenticated()
+          && resource.data.senderId == request.auth.uid;
+      }
+    }
+  }
+}
