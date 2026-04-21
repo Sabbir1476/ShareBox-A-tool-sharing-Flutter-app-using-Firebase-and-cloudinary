@@ -217,6 +217,9 @@ The `RecommendationService` is fully AI-ready. To upgrade to real ML:
 Dhaka, Gazipur, Savar, Narayanganj, Tongi, Narsingdi, Chittagong, Sylhet, Rajshahi, Khulna, Barisal, Rangpur, Mymensingh, Comilla, and more.
 
 ---
+Output
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/d7d31d66-6a8f-4740-b609-6e9335830f2a" />
+
 
 ## 📜 License
 
